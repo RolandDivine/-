@@ -1,0 +1,272 @@
+.signal-card {
+  background: #14172b;
+  border: 1px solid #23274a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.signal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #7052ff, #a281ff);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.signal-card:hover {
+  transform: translateY(-2px);
+  border-color: #2a2f5a;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.signal-card:hover::before {
+  opacity: 1;
+}
+
+.signal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.signal-asset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.asset-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.asset-symbol {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.asset-name {
+  font-size: 0.875rem;
+  color: #8a8ebc;
+}
+
+.asset-price {
+  font-size: 0.875rem;
+  color: #c9cffb;
+  font-weight: 500;
+}
+
+.signal-type {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+}
+
+.signal-metrics {
+  margin-bottom: 1rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.metric-row:last-child {
+  margin-bottom: 0;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #8a8ebc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.signal-analysis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #1a1d3a;
+  border-radius: 8px;
+}
+
+.analysis-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analysis-label {
+  font-size: 0.75rem;
+  color: #8a8ebc;
+  font-weight: 500;
+}
+
+.analysis-value {
+  font-size: 0.75rem;
+  color: #c9cffb;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.signal-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Compact Version */
+.signal-card-compact {
+  background: #1a1d3a;
+  border: 1px solid #23274a;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.signal-card-compact:hover {
+  border-color: #2a2f5a;
+  background: #1f2343;
+}
+
+.signal-card-compact .signal-header {
+  margin-bottom: 0.75rem;
+}
+
+.signal-card-compact .signal-asset {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.signal-card-compact .asset-symbol {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.signal-card-compact .asset-name {
+  font-size: 0.75rem;
+  color: #8a8ebc;
+}
+
+.signal-card-compact .signal-type {
+  font-size: 0.625rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.signal-card-compact .signal-metrics {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.signal-card-compact .signal-confidence,
+.signal-card-compact .signal-roi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.signal-card-compact .confidence-label,
+.signal-card-compact .roi-label {
+  font-size: 0.625rem;
+  color: #8a8ebc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.signal-card-compact .confidence-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0fcc7f;
+}
+
+.signal-card-compact .roi-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a281ff;
+}
+
+.signal-card-compact .signal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signal-card-compact .signal-action {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.signal-card-compact .signal-timeframe {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  color: #8a8ebc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .signal-card {
+    padding: 1rem;
+  }
+  
+  .signal-metrics .metric-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .signal-analysis {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .signal-actions {
+    flex-direction: column;
+  }
+  
+  .signal-card-compact .signal-metrics {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .signal-card-compact .signal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}

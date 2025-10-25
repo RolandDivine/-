@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coin Details – Pandora Intel</title>
+  <!-- Load Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Chart.js for price chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- Shared header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">Pandora<span class="accent">Intel</span></div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">Dashboard</a>
+        <a href="#" class="nav-item">Insights</a>
+        <a href="index.html#market" class="nav-item active">Markets</a>
+        <a href="#" class="nav-item">About</a>
+      </nav>
+    </div>
+    <!-- On the details page we omit the search bar to reduce clutter -->
+  </header>
+  <main class="container">
+    <a href="index.html#market" class="back-link">← Back to Markets</a>
+    <section id="coinDetails" class="coin-section">
+      <!-- Coin information will be injected here -->
+    </section>
+    <section id="chartSection" class="chart-section">
+      <!-- Chart will be rendered here -->
+      <canvas id="priceChart"></canvas>
+    </section>
+  </main>
+  <footer class="footer">
+    <p>Data provided by <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a>. Design inspired by Arkham Intel.</p>
+  </footer>
+  <script src="coin.js"></script>
+</body>
+</html>

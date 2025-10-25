@@ -1,0 +1,20 @@
+{
+  "name": "pandora-intel",
+  "version": "1.0.0",
+  "description": "AI Trading Platform - Pandora Intel",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["crypto", "trading", "ai", "signals", "blockchain"],
+  "author": "Pandora Intel Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

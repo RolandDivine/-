@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Pandora Intel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .admin-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .admin-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    
+    .admin-subtitle {
+      font-size: 1.1rem;
+      color: #a0a0a0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .admin-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .form-input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #4ecdc4;
+    }
+    
+    .form-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+    
+    .form-textarea {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #ffffff;
+      font-size: 1rem;
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: #ffffff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4ecdc4;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      transition: color 0.3s ease;
+    }
+    
+    .back-btn:hover {
+      color: #ffffff;
+    }
+    
+    .signal-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    .signal-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .signal-info {
+      flex: 1;
+    }
+    
+    .signal-symbol {
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+    
+    .signal-details {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+    }
+    
+    .signal-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+    
+    .btn-edit {
+      background: rgba(78, 205, 196, 0.2);
+      color: #4ecdc4;
+      border: 1px solid #4ecdc4;
+    }
+    
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid #ef4444;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #4ecdc4;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+    }
+    
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .alert-success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    
+    @media (max-width: 768px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .signal-item {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <a href="index.html" class="back-btn">
+      ← Back to Dashboard
+    </a>
+    
+    <div class="admin-header">
+      <h1 class="admin-title">🔧 Admin Panel</h1>
+      <p class="admin-subtitle">
+        Manage AI trading signals, monitor performance, and control the platform
+      </p>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="totalSignals">0</div>
+        <div class="stat-label">Total Signals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="activeSignals">0</div>
+        <div class="stat-label">Active Signals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="successRate">0%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalProfit">$0</div>
+        <div class="stat-label">Total Profit</div>
+      </div>
+    </div>
+    
+    <div class="admin-grid">
+      <!-- Add New Signal -->
+      <div class="admin-panel">
+        <h2 class="panel-title">
+          ➕ Add New Signal
+        </h2>
+        
+        <form id="signalForm">
+          <div class="form-group">
+            <label class="form-label">Symbol or Contract Address</label>
+            <input type="text" class="form-input" id="symbol" placeholder="BTC/USDT or 0x..." required>
+            <small style="color: #a0a0a0; font-size: 0.8rem;">For degen trading, use contract address. For others, use trading pair.</small>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Network (for contract addresses)</label>
+            <select class="form-select" id="network">
+              <option value="eth">Ethereum</option>
+              <option value="bsc">Binance Smart Chain</option>
+              <option value="polygon">Polygon</option>
+              <option value="arbitrum">Arbitrum</option>
+              <option value="base">Base</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Trading Type</label>
+            <select class="form-select" id="type" required>
+              <option value="">Select type...</option>
+              <option value="futures">Futures</option>
+              <option value="spot">Spot</option>
+              <option value="hodl">Hodl</option>
+              <option value="degen">Degen</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Action</label>
+            <select class="form-select" id="action" required>
+              <option value="">Select action...</option>
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+              <option value="BUY">BUY</option>
+              <option value="SELL">SELL</option>
+              <option value="HODL">HODL</option>
+              <option value="YOLO">YOLO</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Entry Price</label>
+            <input type="number" class="form-input" id="entryPrice" placeholder="43250" step="0.000001" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Target 1</label>
+            <input type="number" class="form-input" id="target1" placeholder="44100" step="0.000001" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Target 2</label>
+            <input type="number" class="form-input" id="target2" placeholder="45200" step="0.000001" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Stop Loss</label>
+            <input type="number" class="form-input" id="stopLoss" placeholder="42800" step="0.000001" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Confidence (%)</label>
+            <input type="number" class="form-input" id="confidence" placeholder="95" min="1" max="100" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-textarea" id="notes" placeholder="Additional notes about this signal..."></textarea>
+          </div>
+          
+          <button type="submit" class="btn-primary">Add Signal</button>
+        </form>
+      </div>
+      
+      <!-- Manage Signals -->
+      <div class="admin-panel">
+        <h2 class="panel-title">
+          📊 Manage Signals
+        </h2>
+        
+        <div class="signal-list" id="signalList">
+          <!-- Signals will be populated here -->
+        </div>
+        
+        <div style="margin-top: 1rem;">
+          <button class="btn-secondary" onclick="refreshSignals()">Refresh</button>
+          <button class="btn-secondary" onclick="clearAllSignals()">Clear All</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- System Controls -->
+    <div class="admin-panel">
+      <h2 class="panel-title">
+        ⚙️ System Controls
+      </h2>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <button class="btn-secondary" onclick="generateRandomSignals()">Generate Random Signals</button>
+        <button class="btn-secondary" onclick="updateMarketData()">Update Market Data</button>
+        <button class="btn-secondary" onclick="clearCache()">Clear Cache</button>
+        <button class="btn-secondary" onclick="exportSignals()">Export Signals</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Admin panel functionality
+    let allSignals = [];
+
+    // Initialize admin panel
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSignals();
+      setupEventListeners();
+      updateStats();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+      const form = document.getElementById('signalForm');
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addNewSignal();
+      });
+    }
+
+    // Load signals from server
+    async function loadSignals() {
+      try {
+        const response = await fetch('/api/trading-signals');
+        const signals = await response.json();
+        allSignals = signals;
+        renderSignals();
+        updateStats();
+      } catch (error) {
+        console.error('Error loading signals:', error);
+        showAlert('Failed to load signals', 'error');
+      }
+    }
+
+    // Render signals list
+    function renderSignals() {
+      const container = document.getElementById('signalList');
+      if (!container) return;
+
+      if (allSignals.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #a0a0a0;">No signals available</p>';
+        return;
+      }
+
+      container.innerHTML = allSignals.map(signal => `
+        <div class="signal-item">
+          <div class="signal-info">
+            <div class="signal-symbol">${signal.symbol} - ${signal.type.toUpperCase()}</div>
+            <div class="signal-details">
+              ${signal.action} | Entry: $${formatPrice(signal.entryPrice)} | Confidence: ${signal.confidence}%
+            </div>
+          </div>
+          <div class="signal-actions">
+            <button class="btn-small btn-edit" onclick="editSignal('${signal.id}')">Edit</button>
+            <button class="btn-small btn-delete" onclick="deleteSignal('${signal.id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Add new signal
+    async function addNewSignal() {
+      const symbol = document.getElementById('symbol').value;
+      const type = document.getElementById('type').value;
+      const network = document.getElementById('network').value;
+      
+      let tokenData = null;
+      
+      // If it's a contract address (starts with 0x), fetch token data
+      if (symbol.startsWith('0x') && type === 'degen') {
+        try {
+          showAlert('Fetching token data from contract address...', 'info');
+          const response = await fetch(`/api/token-by-contract?address=${symbol}&network=${network}`);
+          if (response.ok) {
+            tokenData = await response.json();
+            showAlert(`Token found: ${tokenData.name} (${tokenData.symbol})`, 'success');
+          } else {
+            throw new Error('Failed to fetch token data');
+          }
+        } catch (error) {
+          showAlert('Failed to fetch token data. Please check the contract address.', 'error');
+          return;
+        }
+      }
+      
+      const formData = {
+        symbol: tokenData ? `${tokenData.symbol}/USDT` : symbol,
+        type: type,
+        action: document.getElementById('action').value,
+        entryPrice: parseFloat(document.getElementById('entryPrice').value),
+        targets: [
+          parseFloat(document.getElementById('target1').value),
+          parseFloat(document.getElementById('target2').value)
+        ],
+        stopLoss: parseFloat(document.getElementById('stopLoss').value),
+        confidence: parseInt(document.getElementById('confidence').value),
+        notes: document.getElementById('notes').value,
+        contractAddress: symbol.startsWith('0x') ? symbol : null,
+        network: symbol.startsWith('0x') ? network : null,
+        tokenData: tokenData
+      };
+
+      try {
+        const response = await fetch('/api/admin/add-signal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          showAlert('Signal added successfully!', 'success');
+          document.getElementById('signalForm').reset();
+          loadSignals();
+        } else {
+          throw new Error('Failed to add signal');
+        }
+      } catch (error) {
+        console.error('Error adding signal:', error);
+        showAlert('Failed to add signal', 'error');
+      }
+    }
+
+    // Edit signal
+    function editSignal(signalId) {
+      const signal = allSignals.find(s => s.id === signalId);
+      if (signal) {
+        // Populate form with signal data
+        document.getElementById('symbol').value = signal.symbol;
+        document.getElementById('type').value = signal.type;
+        document.getElementById('action').value = signal.action;
+        document.getElementById('entryPrice').value = signal.entryPrice;
+        document.getElementById('target1').value = signal.targets[0];
+        document.getElementById('target2').value = signal.targets[1];
+        document.getElementById('stopLoss').value = signal.stopLoss;
+        document.getElementById('confidence').value = signal.confidence;
+        document.getElementById('notes').value = signal.notes || '';
+        
+        showAlert('Signal loaded for editing', 'success');
+      }
+    }
+
+    // Delete signal
+    async function deleteSignal(signalId) {
+      if (!confirm('Are you sure you want to delete this signal?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/delete-signal/${signalId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('Signal deleted successfully!', 'success');
+          loadSignals();
+        } else {
+          throw new Error('Failed to delete signal');
+        }
+      } catch (error) {
+        console.error('Error deleting signal:', error);
+        showAlert('Failed to delete signal', 'error');
+      }
+    }
+
+    // Refresh signals
+    function refreshSignals() {
+      loadSignals();
+      showAlert('Signals refreshed', 'success');
+    }
+
+    // Clear all signals
+    async function clearAllSignals() {
+      if (!confirm('Are you sure you want to clear all signals? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/clear-signals', {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('All signals cleared!', 'success');
+          loadSignals();
+        } else {
+          throw new Error('Failed to clear signals');
+        }
+      } catch (error) {
+        console.error('Error clearing signals:', error);
+        showAlert('Failed to clear signals', 'error');
+      }
+    }
+
+    // Generate random signals
+    async function generateRandomSignals() {
+      try {
+        const response = await fetch('/api/admin/generate-random', {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          showAlert('Random signals generated!', 'success');
+          loadSignals();
+        } else {
+          throw new Error('Failed to generate signals');
+        }
+      } catch (error) {
+        console.error('Error generating signals:', error);
+        showAlert('Failed to generate signals', 'error');
+      }
+    }
+
+    // Update market data
+    async function updateMarketData() {
+      try {
+        const response = await fetch('/api/admin/update-market', {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          showAlert('Market data updated!', 'success');
+        } else {
+          throw new Error('Failed to update market data');
+        }
+      } catch (error) {
+        console.error('Error updating market data:', error);
+        showAlert('Failed to update market data', 'error');
+      }
+    }
+
+    // Clear cache
+    async function clearCache() {
+      try {
+        const response = await fetch('/api/admin/clear-cache', {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          showAlert('Cache cleared!', 'success');
+        } else {
+          throw new Error('Failed to clear cache');
+        }
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+        showAlert('Failed to clear cache', 'error');
+      }
+    }
+
+    // Export signals
+    function exportSignals() {
+      const dataStr = JSON.stringify(allSignals, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'trading-signals.json';
+      link.click();
+      URL.revokeObjectURL(url);
+      showAlert('Signals exported!', 'success');
+    }
+
+    // Update statistics
+    function updateStats() {
+      document.getElementById('totalSignals').textContent = allSignals.length;
+      document.getElementById('activeSignals').textContent = allSignals.filter(s => s.status === 'active').length;
+      
+      const avgConfidence = allSignals.length > 0 
+        ? Math.round(allSignals.reduce((sum, s) => sum + s.confidence, 0) / allSignals.length)
+        : 0;
+      document.getElementById('successRate').textContent = avgConfidence + '%';
+      
+      // Simulate total profit
+      const totalProfit = allSignals.length * 1250; // Mock calculation
+      document.getElementById('totalProfit').textContent = '$' + totalProfit.toLocaleString();
+    }
+
+    // Utility functions
+    function formatPrice(price) {
+      if (price < 0.01) {
+        return price.toFixed(8);
+      } else if (price < 1) {
+        return price.toFixed(4);
+      } else if (price < 100) {
+        return price.toFixed(2);
+      } else {
+        return price.toFixed(0);
+      }
+    }
+
+    function showAlert(message, type) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      
+      const container = document.querySelector('.admin-container');
+      container.insertBefore(alert, container.firstChild);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

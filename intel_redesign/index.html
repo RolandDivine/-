@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pandora Intel - AI Trading Platform</title>
+  <!-- Load Inter font for a modern, readable typeface -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🚀</span>
+        Pandora<span class="accent">Intel</span>
+      </div>
+      <nav class="nav">
+        <a href="#dashboard" class="nav-item active">Dashboard</a>
+        <a href="#signals" class="nav-item">AI Signals</a>
+        <a href="#portfolio" class="nav-item">Portfolio</a>
+        <a href="#analytics" class="nav-item">Analytics</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-secondary">Connect Wallet</button>
+        <button class="btn-primary">Upgrade Pro</button>
+        <a href="admin.html" class="btn-secondary" style="text-decoration: none; display: inline-block;">Admin Panel</a>
+    </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">AI-Powered Trading Signals</h1>
+        <p class="hero-subtitle">Discover moonshot opportunities with advanced AI analysis</p>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-value">94.2%</span>
+            <span class="stat-label">Success Rate</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">$2.4M</span>
+            <span class="stat-label">Profits Generated</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">1,247</span>
+            <span class="stat-label">Active Signals</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trading Types Section -->
+    <section class="trading-types">
+      <h2 class="section-title">Choose Your Trading Style</h2>
+      <div class="trading-grid">
+        <!-- QUICK Futures -->
+        <div class="trading-card futures">
+          <div class="card-header">
+            <div class="card-icon">⚡</div>
+            <h3>QUICK Futures</h3>
+            <span class="card-badge">High Frequency</span>
+          </div>
+          <div class="card-content">
+            <p>Ultra-fast trading signals for short-term futures positions</p>
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Avg. Hold Time</span>
+                <span class="stat-value">15 min</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Success Rate</span>
+                <span class="stat-value">96.8%</span>
+              </div>
+            </div>
+            <div class="signal-preview">
+              <div class="signal-item">
+                <span class="signal-symbol">BTC</span>
+                <span class="signal-action long">LONG</span>
+                <span class="signal-confidence">98%</span>
+              </div>
+              <div class="signal-item">
+                <span class="signal-symbol">ETH</span>
+                <span class="signal-action short">SHORT</span>
+                <span class="signal-confidence">94%</span>
+              </div>
+            </div>
+          </div>
+          <button class="card-action" onclick="window.location.href='futures.html'">Start Trading</button>
+        </div>
+
+        <!-- Spot Trades -->
+        <div class="trading-card spot">
+          <div class="card-header">
+            <div class="card-icon">💎</div>
+            <h3>Spot Trades</h3>
+            <span class="card-badge">Medium Term</span>
+          </div>
+          <div class="card-content">
+            <p>Strategic spot trading with AI-optimized entry and exit points</p>
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Avg. Hold Time</span>
+                <span class="stat-value">2-7 days</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Success Rate</span>
+                <span class="stat-value">92.4%</span>
+              </div>
+            </div>
+            <div class="signal-preview">
+              <div class="signal-item">
+                <span class="signal-symbol">SOL</span>
+                <span class="signal-action long">BUY</span>
+                <span class="signal-confidence">89%</span>
+              </div>
+              <div class="signal-item">
+                <span class="signal-symbol">ADA</span>
+                <span class="signal-action long">BUY</span>
+                <span class="signal-confidence">87%</span>
+              </div>
+            </div>
+          </div>
+          <button class="card-action" onclick="window.location.href='spot.html'">Start Trading</button>
+        </div>
+
+        <!-- Hodl Trades -->
+        <div class="trading-card hodl">
+          <div class="card-header">
+            <div class="card-icon">🏛️</div>
+            <h3>Hodl Trades</h3>
+            <span class="card-badge">Long Term</span>
+          </div>
+          <div class="card-content">
+            <p>Long-term investment opportunities with fundamental analysis</p>
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Avg. Hold Time</span>
+                <span class="stat-value">3-12 months</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Success Rate</span>
+                <span class="stat-value">88.7%</span>
+              </div>
+            </div>
+            <div class="signal-preview">
+              <div class="signal-item">
+                <span class="signal-symbol">DOT</span>
+                <span class="signal-action long">HODL</span>
+                <span class="signal-confidence">91%</span>
+              </div>
+              <div class="signal-item">
+                <span class="signal-symbol">LINK</span>
+                <span class="signal-action long">HODL</span>
+                <span class="signal-confidence">85%</span>
+              </div>
+            </div>
+          </div>
+          <button class="card-action" onclick="window.location.href='hodl.html'">Start Trading</button>
+        </div>
+
+        <!-- Degen Trades -->
+        <div class="trading-card degen">
+          <div class="card-header">
+            <div class="card-icon">🎯</div>
+            <h3>Degen Trades</h3>
+            <span class="card-badge">High Risk</span>
+          </div>
+          <div class="card-content">
+            <p>High-risk, high-reward opportunities for experienced traders</p>
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Avg. Hold Time</span>
+                <span class="stat-value">1-24 hours</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Success Rate</span>
+                <span class="stat-value">78.3%</span>
+              </div>
+            </div>
+            <div class="signal-preview">
+              <div class="signal-item">
+                <span class="signal-symbol">PEPE</span>
+                <span class="signal-action long">YOLO</span>
+                <span class="signal-confidence">76%</span>
+              </div>
+              <div class="signal-item">
+                <span class="signal-symbol">SHIB</span>
+                <span class="signal-action long">YOLO</span>
+                <span class="signal-confidence">72%</span>
+              </div>
+            </div>
+          </div>
+          <button class="card-action" onclick="window.location.href='degen.html'">Start Trading</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Signals Section -->
+    <section class="live-signals">
+      <div class="section-header">
+        <h2 class="section-title">Live AI Signals</h2>
+        <div class="signal-filters">
+          <button class="filter-btn active" data-type="all">All</button>
+          <button class="filter-btn" data-type="futures">Futures</button>
+          <button class="filter-btn" data-type="spot">Spot</button>
+          <button class="filter-btn" data-type="hodl">Hodl</button>
+          <button class="filter-btn" data-type="degen">Degen</button>
+        </div>
+      </div>
+      <div class="signals-container">
+        <div class="signal-card" data-type="futures">
+          <div class="signal-header">
+            <div class="signal-info">
+              <span class="signal-symbol">BTC/USDT</span>
+              <span class="signal-type">Futures</span>
+            </div>
+            <div class="signal-confidence">
+              <span class="confidence-value">98%</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: 98%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="signal-details">
+            <div class="signal-action long">LONG</div>
+            <div class="signal-price">Entry: $43,250</div>
+            <div class="signal-targets">
+              <span>TP1: $44,100</span>
+              <span>TP2: $45,200</span>
+              <span>SL: $42,800</span>
+            </div>
+          </div>
+          <div class="signal-footer">
+            <span class="signal-time">2 min ago</span>
+            <button class="signal-action-btn">Execute Trade</button>
+          </div>
+        </div>
+
+        <div class="signal-card" data-type="spot">
+          <div class="signal-header">
+            <div class="signal-info">
+              <span class="signal-symbol">ETH/USDT</span>
+              <span class="signal-type">Spot</span>
+            </div>
+            <div class="signal-confidence">
+              <span class="confidence-value">89%</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: 89%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="signal-details">
+            <div class="signal-action long">BUY</div>
+            <div class="signal-price">Entry: $2,650</div>
+            <div class="signal-targets">
+              <span>TP1: $2,850</span>
+              <span>TP2: $3,100</span>
+              <span>SL: $2,450</span>
+            </div>
+          </div>
+          <div class="signal-footer">
+            <span class="signal-time">5 min ago</span>
+            <button class="signal-action-btn">Execute Trade</button>
+          </div>
+        </div>
+
+        <div class="signal-card" data-type="degen">
+          <div class="signal-header">
+            <div class="signal-info">
+              <span class="signal-symbol">PEPE/USDT</span>
+              <span class="signal-type">Degen</span>
+            </div>
+            <div class="signal-confidence">
+              <span class="confidence-value">76%</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: 76%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="signal-details">
+            <div class="signal-action long">YOLO</div>
+            <div class="signal-price">Entry: $0.000012</div>
+            <div class="signal-targets">
+              <span>TP1: $0.000015</span>
+              <span>TP2: $0.000018</span>
+              <span>SL: $0.000010</span>
+            </div>
+          </div>
+          <div class="signal-footer">
+            <span class="signal-time">8 min ago</span>
+            <button class="signal-action-btn">Execute Trade</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Market Overview -->
+    <section class="market-overview">
+      <h2 class="section-title">Market Overview</h2>
+      <div class="market-stats">
+        <div class="market-stat">
+          <span class="stat-label">Total Market Cap</span>
+          <span class="stat-value">$1.8T</span>
+          <span class="stat-change positive">+2.4%</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">24h Volume</span>
+          <span class="stat-value">$45.2B</span>
+          <span class="stat-change positive">+12.8%</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">Fear & Greed</span>
+          <span class="stat-value">68</span>
+          <span class="stat-change positive">Greed</span>
+        </div>
+        <div class="market-stat">
+          <span class="stat-label">Active Signals</span>
+          <span class="stat-value">1,247</span>
+          <span class="stat-change positive">+23</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top Performers -->
+    <section class="top-performers">
+      <h2 class="section-title">Top Performing Signals</h2>
+      <div class="performers-grid">
+        <div class="performer-card">
+          <div class="performer-header">
+            <span class="performer-symbol">BTC</span>
+            <span class="performer-type">Futures</span>
+          </div>
+          <div class="performer-stats">
+            <span class="performer-profit">+247%</span>
+            <span class="performer-time">2h 15m</span>
+          </div>
+        </div>
+        <div class="performer-card">
+          <div class="performer-header">
+            <span class="performer-symbol">SOL</span>
+            <span class="performer-type">Spot</span>
+          </div>
+          <div class="performer-stats">
+            <span class="performer-profit">+189%</span>
+            <span class="performer-time">1d 3h</span>
+          </div>
+        </div>
+        <div class="performer-card">
+          <div class="performer-header">
+            <span class="performer-symbol">PEPE</span>
+            <span class="performer-type">Degen</span>
+          </div>
+          <div class="performer-stats">
+            <span class="performer-profit">+1,247%</span>
+            <span class="performer-time">3h 42m</span>
+          </div>
+        </div>
+        <div class="performer-card">
+          <div class="performer-header">
+            <span class="performer-symbol">DOT</span>
+            <span class="performer-type">Hodl</span>
+          </div>
+          <div class="performer-stats">
+            <span class="performer-profit">+156%</span>
+            <span class="performer-time">2w 1d</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Pandora Intel</h4>
+        <p>AI-powered trading signals for the modern crypto trader</p>
+      </div>
+      <div class="footer-section">
+        <h4>Products</h4>
+        <ul>
+          <li><a href="#">QUICK Futures</a></li>
+          <li><a href="#">Spot Trading</a></li>
+          <li><a href="#">Hodl Signals</a></li>
+          <li><a href="#">Degen Trades</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">API</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Community</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Risk Disclaimer</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Pandora Intel. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
