@@ -1,27 +1,36 @@
 // backend/server.js
 //
-// Minimal HTTP server for the Pandora Intel project. This server proxies
-// data from the CoinGecko API, attaches a "buy_signal" flag for coins
-// running on the Binance Smart Chain (BNB chain), and exposes a small
-// REST API. It also serves static frontend files from the intel_redesign
-// directory. No external dependencies (such as Express) are used to
-// maximize portability in environments without package installation.
+// Enhanced HTTP server for the Pandora Intel project with AI Trading Engine integration.
+// This server now includes advanced AI signal generation, real-time market analysis,
+// and maintains backward compatibility with existing endpoints.
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 
-// Determine the frontend directory relative to this file. The frontend
-// resides one level above the backend folder in intel_redesign. Adjust
-// this path as needed if your project structure changes.
+// Determine the frontend directory relative to this file.
 const frontendDir = path.resolve(__dirname, '../intel_redesign');
 
-// Define a fetch function. Node v18+ exposes a global fetch API. In
-// earlier versions, fetch may not exist, so we attempt to dynamically
-// import node-fetch. If the import fails, an error will propagate when
-// fetch is called. This helper ensures the code runs in modern
-// environments without requiring additional dependencies.
+// AI Trading Engine Integration
+let AdvancedTradingEngine, APIIntegrationLayer, tradingSystem;
+
+try {
+  // Dynamic imports for AI trading engine
+  AdvancedTradingEngine = require('../trading-engine/enhanced-trading-engine');
+  APIIntegrationLayer = require('../trading-engine/api-integration-layer');
+  
+  // Initialize AI trading system
+  const PandoraIntelTradingSystem = require('../trading-engine/main.js');
+  tradingSystem = new PandoraIntelTradingSystem();
+  
+  console.log('🤖 AI Trading Engine loaded successfully');
+} catch (error) {
+  console.warn('⚠️ AI Trading Engine not available, using enhanced signal generation:', error.message);
+  tradingSystem = null;
+}
+
+// Define fetch function
 let fetch;
 if (typeof global.fetch === 'function') {
   fetch = global.fetch.bind(global);
@@ -32,26 +41,21 @@ if (typeof global.fetch === 'function') {
   };
 }
 
-// In-memory caches. Each entry stores { timestamp, data }. The TTL is
-// defined per fetch function below (30 seconds) to balance freshness
-// with API rate limits.
+// Enhanced caching system
 let marketCache = {};
 let detailCache = {};
 let chartCache = {};
-
-// Additional caches for computed metrics. Cache fundamentals and market
-// intelligence results separately to avoid repeated computation. TTL is
-// set to 30 seconds in alignment with other caches.
 let fundamentalsCache = { data: null, timestamp: 0 };
 let intelligenceCache = { data: null, timestamp: 0 };
 let tradingSignalsCache = { data: null, timestamp: 0 };
 
-// Set of CoinGecko IDs that run on the Binance Smart Chain. Populated
-// during server startup by querying the list endpoint with platform
-// information.
+// Advanced cache for AI signals
+let aiSignalsCache = { data: null, timestamp: 0 };
+
+// Set of CoinGecko IDs that run on the Binance Smart Chain
 let bnbCoins = new Set();
 
-// Live data feeds and trading platforms
+// Trading platforms configuration
 const TRADING_PLATFORMS = {
   spot: ['nq-swap.xyz', 'binance-web3', 'four.meme', 'pump-swap'],
   degen: ['nq-swap.xyz', 'binance-web3', 'four.meme', 'pump-swap'],
@@ -59,7 +63,7 @@ const TRADING_PLATFORMS = {
   futures: ['aster-dex']
 };
 
-// GeckoTerminal API endpoints
+// API endpoints
 const GECKO_TERMINAL_BASE = 'https://api.geckoterminal.com/api/v2';
 const COINGECKO_BASE = 'https://api.coingecko.com/api/v3';
 
@@ -146,7 +150,7 @@ async function fetchJsonWithProxy(url, options = {}) {
  */
 async function fetchGeckoTerminalData(endpoint) {
   const url = `${GECKO_TERMINAL_BASE}${endpoint}`;
-  return await fetchJsonWithProxy(url, { ttl: 15000 }); // 15 second cache for live data
+  return await fetchJsonWithProxy(url, { ttl: 15000 });
 }
 
 /**
@@ -154,11 +158,11 @@ async function fetchGeckoTerminalData(endpoint) {
  */
 async function fetchCoinGeckoData(endpoint) {
   const url = `${COINGECKO_BASE}${endpoint}`;
-  return await fetchJsonWithProxy(url, { ttl: 30000 }); // 30 second cache
+  return await fetchJsonWithProxy(url, { ttl: 30000 });
 }
 
 /**
- * Get token data by contract address (for degen trading)
+ * Get token data by contract address
  */
 async function getTokenByContract(contractAddress, network = 'eth') {
   const cacheKey = `${network}_${contractAddress}`;
@@ -168,7 +172,6 @@ async function getTokenByContract(contractAddress, network = 'eth') {
   }
 
   try {
-    // Try GeckoTerminal first for contract-based tokens
     const geckoData = await fetchGeckoTerminalData(`/networks/${network}/tokens/${contractAddress}`);
     
     if (geckoData && geckoData.data) {
@@ -194,7 +197,6 @@ async function getTokenByContract(contractAddress, network = 'eth') {
     console.warn(`Failed to fetch token data from GeckoTerminal for ${contractAddress}:`, error.message);
   }
 
-  // Fallback to CoinGecko if available
   try {
     const coingeckoData = await fetchCoinGeckoData(`/coins/${network}/contract/${contractAddress}`);
     if (coingeckoData) {
@@ -260,9 +262,7 @@ async function getLiquidityPoolData(poolAddress, network = 'eth') {
 }
 
 /**
- * Load the list of BNB chain coins. CoinGecko's /coins/list endpoint
- * returns all coins with optional platform information. We filter for
- * coins that have a non-empty entry under 'binance-smart-chain'.
+ * Load BNB chain coins
  */
 async function loadBnbCoins() {
   try {
@@ -282,15 +282,7 @@ async function loadBnbCoins() {
 }
 
 /**
- * Compute a set of high-level on-chain fundamentals using global
- * aggregate data from CoinGecko. The function fetches the global
- * endpoint and extracts a handful of metrics: 24h trading volume,
- * market cap change (24h), the number of active cryptocurrencies, and
- * Bitcoin market dominance. These metrics loosely correspond to
- * "activity", "growth", "adoption", and "health" respectively.
- *
- * Results are cached for 30 seconds to reduce API calls.
- * @returns {Promise<object>} Object with labeled fundamentals
+ * Compute fundamentals
  */
 async function getFundamentals() {
   const now = Date.now();
@@ -330,16 +322,7 @@ async function getFundamentals() {
 }
 
 /**
- * Compute market intelligence metrics derived from both global and
- * per-coin market data. Metrics include:
- *   - Liquidity Ratio: total 24h volume / total market cap
- *   - Top 5 Concentration: sum of market caps of top 5 coins / total market cap
- *   - Max 24h Volatility: maximum absolute 24h price change (%) among top 100
- *   - Bull/Bear Ratio: number of coins with positive 24h change divided by
- *     the number with negative change (bullish vs bearish coins)
- *
- * Results are cached for 30 seconds to reduce computation time.
- * @returns {Promise<object>} Object with labeled intelligence metrics
+ * Compute market intelligence
  */
 async function getMarketIntelligence() {
   const now = Date.now();
@@ -347,14 +330,12 @@ async function getMarketIntelligence() {
   if (intelligenceCache.data && now - intelligenceCache.timestamp < TTL) {
     return intelligenceCache.data;
   }
-  // Fetch global data and first page of market data (top 100 coins)
   const globalUrl = 'https://api.coingecko.com/api/v3/global';
   const globalData = await fetchJsonWithProxy(globalUrl);
   let markets;
   try {
     markets = await getMarketData(1, 100);
   } catch (err) {
-    // If we cannot fetch market data, fall back to empty array
     markets = [];
   }
   const data = {};
@@ -362,7 +343,7 @@ async function getMarketIntelligence() {
     const g = globalData.data || {};
     const totalVolume = g.total_volume && g.total_volume.usd ? g.total_volume.usd : null;
     const totalMarketCap = g.total_market_cap && g.total_market_cap.usd ? g.total_market_cap.usd : null;
-    // Liquidity Ratio
+    
     let liquidityRatio = null;
     if (totalVolume && totalMarketCap && totalMarketCap !== 0) {
       liquidityRatio = totalVolume / totalMarketCap;
@@ -371,7 +352,7 @@ async function getMarketIntelligence() {
       label: 'Liquidity Ratio',
       value: liquidityRatio,
     };
-    // Top 5 concentration
+    
     let concentration = null;
     if (Array.isArray(markets) && markets.length > 0 && totalMarketCap) {
       const top5 = markets.slice(0, 5).reduce((sum, c) => sum + (c.market_cap || 0), 0);
@@ -381,7 +362,7 @@ async function getMarketIntelligence() {
       label: 'Top 5 Concentration',
       value: concentration,
     };
-    // Max 24h volatility
+    
     let maxVol = null;
     if (Array.isArray(markets) && markets.length > 0) {
       maxVol = markets.reduce((max, c) => {
@@ -397,7 +378,7 @@ async function getMarketIntelligence() {
       label: 'Max 24h Volatility (%)',
       value: maxVol,
     };
-    // Bull/Bear Ratio
+    
     let bull = 0;
     let bear = 0;
     if (Array.isArray(markets) && markets.length > 0) {
@@ -430,11 +411,7 @@ async function getMarketIntelligence() {
 }
 
 /**
- * Fetch paginated market data. Results are cached for 30 seconds.
- * Adds a buy_signal flag for each coin if it belongs to bnbCoins.
- *
- * @param {number} page 1-based page number
- * @param {number} perPage number of items per page
+ * Fetch market data
  */
 async function getMarketData(page = 1, perPage = 100) {
   const key = `market_${page}_${perPage}`;
@@ -456,10 +433,7 @@ async function getMarketData(page = 1, perPage = 100) {
 }
 
 /**
- * Fetch detailed coin information. Results are cached for 30 seconds.
- * Adds buy_signal property if coin is on BNB chain.
- *
- * @param {string} id Coin ID
+ * Fetch coin details
  */
 async function getCoinDetails(id) {
   const now = Date.now();
@@ -477,10 +451,7 @@ async function getCoinDetails(id) {
 }
 
 /**
- * Fetch market chart (historical price) data for a coin. Caches for 30 seconds.
- *
- * @param {string} id Coin ID
- * @param {number} days Number of days (default 30)
+ * Fetch coin chart data
  */
 async function getCoinChart(id, days = 30) {
   const key = `${id}_chart_${days}`;
@@ -497,13 +468,15 @@ async function getCoinChart(id, days = 30) {
   return data;
 }
 
+// Manual signals storage
+let manualSignals = [];
+
 /**
- * Generate AI trading signals based on market data and technical analysis.
- * This simulates AI-powered signal generation with realistic trading recommendations.
+ * AI-Powered Trading Signal Generation
  */
 async function getTradingSignals() {
   const now = Date.now();
-  const TTL = 60 * 1000; // Cache for 1 minute
+  const TTL = 60 * 1000;
   
   // Check cache first
   if (tradingSignalsCache && now - tradingSignalsCache.timestamp < TTL) {
@@ -511,19 +484,24 @@ async function getTradingSignals() {
   }
 
   try {
-    // Fetch top coins for analysis
-    const marketData = await getMarketData(1, 50);
     let signals = [];
 
-    // Generate signals for top coins
-    for (const coin of marketData.slice(0, 20)) {
-      const signal = await generateSignalForCoin(coin);
-      if (signal) {
-        signals.push(signal);
+    // Use AI Engine if available
+    if (tradingSystem) {
+      try {
+        const opportunities = await tradingSystem.apiLayer.analyzeCryptoUniverse();
+        const aiSignals = await tradingSystem.generateBatchSignals(opportunities);
+        signals = aiSignals.filter(signal => signal.confidence >= 70);
+        console.log(`🤖 AI Engine generated ${signals.length} signals`);
+      } catch (aiError) {
+        console.warn('AI Engine failed, falling back to traditional signals:', aiError.message);
+        signals = await generateTraditionalSignals();
       }
+    } else {
+      signals = await generateTraditionalSignals();
     }
 
-    // Add manual signals to the results
+    // Add manual signals
     signals.push(...manualSignals);
     
     // Cache the results
@@ -537,50 +515,56 @@ async function getTradingSignals() {
 }
 
 /**
- * Generate a trading signal for a specific coin based on technical analysis
+ * Traditional signal generation (fallback)
+ */
+async function generateTraditionalSignals() {
+  const marketData = await getMarketData(1, 50);
+  let signals = [];
+
+  for (const coin of marketData.slice(0, 20)) {
+    const signal = await generateSignalForCoin(coin);
+    if (signal) {
+      signals.push(signal);
+    }
+  }
+
+  return signals;
+}
+
+/**
+ * Generate signal for individual coin
  */
 async function generateSignalForCoin(coin) {
   try {
-    // Analyze price movement
     const priceChange24h = coin.price_change_percentage_24h || 0;
     const priceChange7d = coin.price_change_percentage_7d_in_currency || 0;
     const volume = coin.total_volume || 0;
     const marketCap = coin.market_cap || 0;
 
-    // Determine signal type based on volatility and market cap
     let signalType = 'spot';
     let action = 'HOLD';
     let confidence = 50;
 
-    // High volatility + low market cap = degen opportunity
     if (Math.abs(priceChange24h) > 15 && marketCap < 1000000000) {
       signalType = 'degen';
       action = priceChange24h > 0 ? 'YOLO' : 'AVOID';
       confidence = Math.min(85, 60 + Math.abs(priceChange24h) / 2);
-    }
-    // Medium volatility + established coin = futures opportunity
-    else if (Math.abs(priceChange24h) > 5 && marketCap > 10000000000) {
+    } else if (Math.abs(priceChange24h) > 5 && marketCap > 10000000000) {
       signalType = 'futures';
       action = priceChange24h > 0 ? 'LONG' : 'SHORT';
       confidence = Math.min(95, 70 + Math.abs(priceChange24h));
-    }
-    // Stable growth = hodl opportunity
-    else if (priceChange7d > 10 && priceChange24h > 0) {
+    } else if (priceChange7d > 10 && priceChange24h > 0) {
       signalType = 'hodl';
       action = 'HODL';
       confidence = Math.min(90, 75 + priceChange7d / 2);
-    }
-    // Regular spot trading
-    else if (Math.abs(priceChange24h) > 2) {
+    } else if (Math.abs(priceChange24h) > 2) {
       signalType = 'spot';
       action = priceChange24h > 0 ? 'BUY' : 'SELL';
       confidence = Math.min(85, 60 + Math.abs(priceChange24h) * 2);
     }
 
-    // Skip low confidence signals
     if (confidence < 70) return null;
 
-    // Calculate entry price and targets
     const currentPrice = coin.current_price;
     const volatility = Math.abs(priceChange24h) / 100;
     
@@ -625,13 +609,161 @@ async function generateSignalForCoin(coin) {
 }
 
 /**
- * Generate a single AI signal on demand
+ * AI-Powered Enhanced Signal Generation
+ */
+async function generateEnhancedSignal(coin, signalType = 'spot') {
+  try {
+    // Use AI Engine if available
+    if (tradingSystem) {
+      try {
+        const aiSignal = await tradingSystem.engine.generateSignal(coin.symbol, signalType);
+        if (aiSignal && aiSignal.confidence >= 70) {
+          return {
+            ...aiSignal,
+            coinId: coin.id,
+            coinName: coin.name,
+            marketCap: coin.market_cap,
+            volume24h: coin.total_volume,
+            priceChange24h: coin.price_change_percentage_24h,
+            buySignal: coin.buy_signal || false,
+            tradingPlatforms: getTradingPlatforms(signalType),
+            source: 'ai_engine'
+          };
+        }
+      } catch (aiError) {
+        console.warn(`AI Engine failed for ${coin.symbol}, using fallback:`, aiError.message);
+      }
+    }
+    
+    // Fallback to traditional enhanced signal generation
+    return await generateEnhancedSignalFallback(coin, signalType);
+  } catch (error) {
+    console.error(`Enhanced signal generation failed for ${coin.id}:`, error.message);
+    return await generateEnhancedSignalFallback(coin, signalType);
+  }
+}
+
+/**
+ * Traditional enhanced signal generation (fallback)
+ */
+async function generateEnhancedSignalFallback(coin, signalType = 'spot') {
+  const priceChange24h = coin.price_change_percentage_24h || 0;
+  const priceChange7d = coin.price_change_percentage_7d_in_currency || 0;
+  const volume = coin.total_volume || 0;
+  const marketCap = coin.market_cap || 0;
+  const currentPrice = coin.current_price;
+
+  let action = 'HOLD';
+  let confidence = 50;
+  let targets = [];
+  let stopLoss = currentPrice * 0.95;
+
+  const volatility = Math.abs(priceChange24h) / 100;
+  const volumeRatio = volume / marketCap;
+  const momentum = priceChange7d > 0 ? 1 : -1;
+
+  switch (signalType) {
+    case 'futures':
+      if (Math.abs(priceChange24h) > 3 && marketCap > 1000000000) {
+        action = priceChange24h > 0 ? 'LONG' : 'SHORT';
+        confidence = Math.min(95, 70 + Math.abs(priceChange24h) * 2);
+        targets = [
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 0.8 : -volatility * 0.8)),
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 1.5 : -volatility * 1.5))
+        ];
+        stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 0.5 : volatility * 0.5));
+      }
+      break;
+
+    case 'spot':
+      if (Math.abs(priceChange24h) > 2 && volumeRatio > 0.01) {
+        action = priceChange24h > 0 ? 'BUY' : 'SELL';
+        confidence = Math.min(90, 65 + Math.abs(priceChange24h) * 1.5);
+        targets = [
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 0.6 : -volatility * 0.6)),
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 1.2 : -volatility * 1.2))
+        ];
+        stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 0.4 : volatility * 0.4));
+      }
+      break;
+
+    case 'hodl':
+      if (priceChange7d > 5 && priceChange24h > 0 && marketCap > 100000000) {
+        action = 'HODL';
+        confidence = Math.min(88, 70 + priceChange7d / 2);
+        targets = [
+          currentPrice * (1 + volatility * 1.5),
+          currentPrice * (1 + volatility * 3)
+        ];
+        stopLoss = currentPrice * (1 - volatility * 0.8);
+      }
+      break;
+
+    case 'degen':
+      if (Math.abs(priceChange24h) > 10 && marketCap < 1000000000) {
+        action = priceChange24h > 0 ? 'YOLO' : 'AVOID';
+        confidence = Math.min(85, 60 + Math.abs(priceChange24h) / 2);
+        targets = [
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 2 : -volatility * 2)),
+          currentPrice * (1 + (priceChange24h > 0 ? volatility * 5 : -volatility * 5))
+        ];
+        stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 1.5 : volatility * 1.5));
+      }
+      break;
+  }
+
+  if (confidence < 70) return null;
+
+  return {
+    id: `enhanced_${coin.id}_${Date.now()}`,
+    symbol: `${coin.symbol.toUpperCase()}/USDT`,
+    type: signalType,
+    action: action,
+    entryPrice: currentPrice,
+    targets: targets,
+    stopLoss: stopLoss,
+    confidence: Math.round(confidence),
+    timestamp: Date.now(),
+    coinId: coin.id,
+    coinName: coin.name,
+    marketCap: marketCap,
+    volume24h: volume,
+    priceChange24h: priceChange24h,
+    priceChange7d: priceChange7d,
+    volatility: volatility,
+    volumeRatio: volumeRatio,
+    momentum: momentum,
+    buySignal: coin.buy_signal || false,
+    tradingPlatforms: getTradingPlatforms(signalType),
+    source: 'enhanced_traditional'
+  };
+}
+
+/**
+ * Generate single AI signal
  */
 async function generateAISignal() {
   try {
+    // Use AI Engine if available
+    if (tradingSystem) {
+      try {
+        const marketData = await getMarketData(1, 10);
+        const randomCoin = marketData[Math.floor(Math.random() * marketData.length)];
+        const signalTypes = ['futures', 'spot', 'hodl', 'degen'];
+        const signalType = signalTypes[Math.floor(Math.random() * signalTypes.length)];
+        
+        const aiSignal = await tradingSystem.engine.generateSignal(randomCoin.symbol, signalType);
+        if (aiSignal && aiSignal.confidence >= 75) {
+          return aiSignal;
+        }
+      } catch (aiError) {
+        console.warn('AI Engine signal generation failed:', aiError.message);
+      }
+    }
+    
+    // Fallback to traditional signal
     const signals = await getTradingSignals();
     if (signals.length > 0) {
-      // Return a random high-confidence signal
       const highConfidenceSignals = signals.filter(s => s.confidence > 85);
       if (highConfidenceSignals.length > 0) {
         return highConfidenceSignals[Math.floor(Math.random() * highConfidenceSignals.length)];
@@ -646,11 +778,10 @@ async function generateAISignal() {
 }
 
 /**
- * Get portfolio performance metrics
+ * Get portfolio performance
  */
 async function getPortfolioPerformance() {
   try {
-    // Simulate portfolio performance data
     const performance = {
       totalValue: 125000,
       totalProfit: 25000,
@@ -686,11 +817,8 @@ async function getPortfolioPerformance() {
   }
 }
 
-// Admin functions
-let manualSignals = [];
-
 /**
- * Add a manual signal from admin panel
+ * Add manual signal
  */
 async function addManualSignal(signalData) {
   const newSignal = {
@@ -716,7 +844,6 @@ async function addManualSignal(signalData) {
 
   manualSignals.push(newSignal);
   
-  // Update the trading signals cache to include manual signals
   if (tradingSignalsCache && tradingSignalsCache.data) {
     tradingSignalsCache.data.push(newSignal);
   }
@@ -725,16 +852,14 @@ async function addManualSignal(signalData) {
 }
 
 /**
- * Delete a signal
+ * Delete signal
  */
 async function deleteSignal(signalId) {
-  // Remove from manual signals
   const manualIndex = manualSignals.findIndex(s => s.id === signalId);
   if (manualIndex !== -1) {
     manualSignals.splice(manualIndex, 1);
   }
 
-  // Remove from cache
   if (tradingSignalsCache && tradingSignalsCache.data) {
     const cacheIndex = tradingSignalsCache.data.findIndex(s => s.id === signalId);
     if (cacheIndex !== -1) {
@@ -756,7 +881,7 @@ async function clearAllSignals() {
 }
 
 /**
- * Generate random signals for testing
+ * Generate random signals
  */
 async function generateRandomSignals() {
   const symbols = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'ADA/USDT', 'DOT/USDT', 'LINK/USDT', 'MATIC/USDT', 'AVAX/USDT'];
@@ -768,7 +893,7 @@ async function generateRandomSignals() {
     const type = types[Math.floor(Math.random() * types.length)];
     const action = actions[Math.floor(Math.random() * actions.length)];
     const entryPrice = Math.random() * 1000 + 1;
-    const volatility = Math.random() * 0.1 + 0.05; // 5-15% volatility
+    const volatility = Math.random() * 0.1 + 0.05;
 
     const signalData = {
       symbol: symbol,
@@ -780,7 +905,7 @@ async function generateRandomSignals() {
         entryPrice * (1 + volatility * 1.5)
       ],
       stopLoss: entryPrice * (1 - volatility * 0.5),
-      confidence: Math.floor(Math.random() * 30) + 70, // 70-100%
+      confidence: Math.floor(Math.random() * 30) + 70,
       notes: `Random generated signal for testing`
     };
 
@@ -794,15 +919,15 @@ async function generateRandomSignals() {
  * Update market data
  */
 async function updateMarketData() {
-  // Clear all caches to force refresh
   tradingSignalsCache.data = null;
   tradingSignalsCache.timestamp = 0;
   fundamentalsCache.data = null;
   fundamentalsCache.timestamp = 0;
   intelligenceCache.data = null;
   intelligenceCache.timestamp = 0;
+  aiSignalsCache.data = null;
+  aiSignalsCache.timestamp = 0;
   
-  // Clear individual caches
   Object.keys(marketCache).forEach(key => delete marketCache[key]);
   Object.keys(detailCache).forEach(key => delete detailCache[key]);
   Object.keys(chartCache).forEach(key => delete chartCache[key]);
@@ -820,12 +945,13 @@ async function clearAllCaches() {
   fundamentalsCache.timestamp = 0;
   intelligenceCache.data = null;
   intelligenceCache.timestamp = 0;
+  aiSignalsCache.data = null;
+  aiSignalsCache.timestamp = 0;
   
   Object.keys(marketCache).forEach(key => delete marketCache[key]);
   Object.keys(detailCache).forEach(key => delete detailCache[key]);
   Object.keys(chartCache).forEach(key => delete chartCache[key]);
   
-  // Clear new cache maps
   cache.marketData.clear();
   cache.tokenData.clear();
   cache.liquidityPools.clear();
@@ -835,7 +961,7 @@ async function clearAllCaches() {
 }
 
 /**
- * Generate trading URLs for different platforms
+ * Generate trading URLs
  */
 function generateTradingUrls(signal, platform) {
   const { symbol, type, action, entryPrice } = signal;
@@ -872,130 +998,122 @@ function generateTradingUrls(signal, platform) {
 }
 
 /**
- * Get available trading platforms for a signal type
+ * Get trading platforms
  */
 function getTradingPlatforms(signalType) {
   return TRADING_PLATFORMS[signalType] || [];
 }
 
 /**
- * Enhanced signal generation with live data
+ * AI Trading Engine Endpoints
  */
-async function generateEnhancedSignal(coin, signalType = 'spot') {
-  try {
-    const priceChange24h = coin.price_change_percentage_24h || 0;
-    const priceChange7d = coin.price_change_percentage_7d_in_currency || 0;
-    const volume = coin.total_volume || 0;
-    const marketCap = coin.market_cap || 0;
-    const currentPrice = coin.current_price;
-
-    // Enhanced AI analysis
-    let action = 'HOLD';
-    let confidence = 50;
-    let targets = [];
-    let stopLoss = currentPrice * 0.95; // Default 5% stop loss
-
-    // Advanced signal logic based on multiple factors
-    const volatility = Math.abs(priceChange24h) / 100;
-    const volumeRatio = volume / marketCap;
-    const momentum = priceChange7d > 0 ? 1 : -1;
-
-    switch (signalType) {
-      case 'futures':
-        if (Math.abs(priceChange24h) > 3 && marketCap > 1000000000) {
-          action = priceChange24h > 0 ? 'LONG' : 'SHORT';
-          confidence = Math.min(95, 70 + Math.abs(priceChange24h) * 2);
-          targets = [
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 0.8 : -volatility * 0.8)),
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 1.5 : -volatility * 1.5))
-          ];
-          stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 0.5 : volatility * 0.5));
-        }
-        break;
-
-      case 'spot':
-        if (Math.abs(priceChange24h) > 2 && volumeRatio > 0.01) {
-          action = priceChange24h > 0 ? 'BUY' : 'SELL';
-          confidence = Math.min(90, 65 + Math.abs(priceChange24h) * 1.5);
-          targets = [
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 0.6 : -volatility * 0.6)),
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 1.2 : -volatility * 1.2))
-          ];
-          stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 0.4 : volatility * 0.4));
-        }
-        break;
-
-      case 'hodl':
-        if (priceChange7d > 5 && priceChange24h > 0 && marketCap > 100000000) {
-          action = 'HODL';
-          confidence = Math.min(88, 70 + priceChange7d / 2);
-          targets = [
-            currentPrice * (1 + volatility * 1.5),
-            currentPrice * (1 + volatility * 3)
-          ];
-          stopLoss = currentPrice * (1 - volatility * 0.8);
-        }
-        break;
-
-      case 'degen':
-        if (Math.abs(priceChange24h) > 10 && marketCap < 1000000000) {
-          action = priceChange24h > 0 ? 'YOLO' : 'AVOID';
-          confidence = Math.min(85, 60 + Math.abs(priceChange24h) / 2);
-          targets = [
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 2 : -volatility * 2)),
-            currentPrice * (1 + (priceChange24h > 0 ? volatility * 5 : -volatility * 5))
-          ];
-          stopLoss = currentPrice * (1 + (priceChange24h > 0 ? -volatility * 1.5 : volatility * 1.5));
-        }
-        break;
+async function handleAIEndpoints(pathname, urlObj, req, res) {
+  // AI Trading Signals
+  if (pathname === '/api/ai/signals') {
+    try {
+      const signalType = urlObj.searchParams.get('type') || 'spot';
+      const limit = parseInt(urlObj.searchParams.get('limit') || '20', 10);
+      
+      if (tradingSystem) {
+        const opportunities = await tradingSystem.apiLayer.analyzeCryptoUniverse();
+        const aiSignals = await tradingSystem.generateBatchSignals(opportunities);
+        const filteredSignals = aiSignals.filter(signal => 
+          signal.type === signalType && signal.confidence >= 75
+        ).slice(0, limit);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(filteredSignals));
+      } else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'AI Trading Engine not available' }));
+      }
+    } catch (error) {
+      console.error('AI Signals API error:', error.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Failed to generate AI signals' }));
     }
-
-    if (confidence < 70) return null;
-
-    return {
-      id: `enhanced_${coin.id}_${Date.now()}`,
-      symbol: `${coin.symbol.toUpperCase()}/USDT`,
-      type: signalType,
-      action: action,
-      entryPrice: currentPrice,
-      targets: targets,
-      stopLoss: stopLoss,
-      confidence: Math.round(confidence),
-      timestamp: Date.now(),
-      coinId: coin.id,
-      coinName: coin.name,
-      marketCap: marketCap,
-      volume24h: volume,
-      priceChange24h: priceChange24h,
-      priceChange7d: priceChange7d,
-      volatility: volatility,
-      volumeRatio: volumeRatio,
-      momentum: momentum,
-      buySignal: coin.buy_signal || false,
-      tradingPlatforms: getTradingPlatforms(signalType),
-      tradingUrls: getTradingPlatforms(signalType).reduce((urls, platform) => {
-        urls[platform] = generateTradingUrls({
-          symbol: `${coin.symbol.toUpperCase()}/USDT`,
-          type: signalType,
-          action: action,
-          entryPrice: currentPrice
-        }, platform);
-        return urls;
-      }, {}),
-      source: 'enhanced_ai'
-    };
-  } catch (error) {
-    console.error(`Error generating enhanced signal for ${coin.id}:`, error);
-    return null;
   }
+
+  // AI Opportunities
+  if (pathname === '/api/ai/opportunities') {
+    try {
+      if (tradingSystem) {
+        const opportunities = await tradingSystem.apiLayer.analyzeCryptoUniverse();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(opportunities));
+      } else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'AI Trading Engine not available' }));
+      }
+    } catch (error) {
+      console.error('AI Opportunities API error:', error.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Failed to fetch AI opportunities' }));
+    }
+  }
+
+  // AI Performance
+  if (pathname === '/api/ai/performance') {
+    try {
+      if (tradingSystem) {
+        const performance = tradingSystem.engine.getPerformance();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(performance));
+      } else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'AI Trading Engine not available' }));
+      }
+    } catch (error) {
+      console.error('AI Performance API error:', error.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Failed to fetch AI performance' }));
+    }
+  }
+
+  // Start AI Trading Session
+  if (pathname === '/api/ai/start-session' && req.method === 'POST') {
+    try {
+      if (tradingSystem) {
+        const performance = await tradingSystem.startTradingSession();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(performance));
+      } else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'AI Trading Engine not available' }));
+      }
+    } catch (error) {
+      console.error('AI Session API error:', error.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Failed to start AI session' }));
+    }
+  }
+
+  // AI System Status
+  if (pathname === '/api/ai/status') {
+    try {
+      if (tradingSystem) {
+        const status = tradingSystem.getSystemStatus();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(status));
+      } else {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ 
+          error: 'AI Trading Engine not available',
+          status: 'fallback_mode'
+        }));
+      }
+    } catch (error) {
+      console.error('AI Status API error:', error.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Failed to get AI status' }));
+    }
+  }
+
+  return false; // No matching AI endpoint
 }
 
 /**
- * Determine MIME type based on filename extension. Only a handful of
- * common types are enumerated here. Unknown extensions default to
- * 'application/octet-stream'.
- *
- * @param {string} filePath Path to file
+ * Get MIME type
  */
 function getContentType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -1013,34 +1131,26 @@ function getContentType(filePath) {
 }
 
 /**
- * Serve static files from the frontend directory. If the requested
- * pathname corresponds to a file under intel_redesign, return that file.
- * Otherwise, fall back to index.html to enable client‑side routing.
- *
- * @param {string} urlPath The request path (decoded, without query)
- * @param {http.ServerResponse} res
+ * Serve static files
  */
 async function serveStatic(urlPath, res) {
   try {
     let filePath;
     if (!urlPath || urlPath === '/') {
-      // Root path -> index.html
       filePath = path.join(frontendDir, 'index.html');
     } else {
-      // Remove leading slash and resolve path within frontendDir
       const relative = decodeURIComponent(urlPath.replace(/^\//, ''));
       filePath = path.join(frontendDir, relative);
     }
-    // Check if file exists. If not, fall back to index.html for client routing.
+    
     let stat;
     try {
       stat = fs.statSync(filePath);
     } catch (err) {
-      // fallback to index.html
       filePath = path.join(frontendDir, 'index.html');
       stat = fs.statSync(filePath);
     }
-    // If it's a directory, look for index.html inside.
+    
     if (stat.isDirectory()) {
       filePath = path.join(filePath, 'index.html');
     }
@@ -1056,32 +1166,32 @@ async function serveStatic(urlPath, res) {
 }
 
 /**
- * Handle API requests under the /api namespace. Routes are matched
- * manually based on the pathname. Unknown endpoints return 404.
- *
- * @param {http.IncomingMessage} req
- * @param {http.ServerResponse} res
+ * Handle API requests
  */
 async function handleApi(req, res) {
   const urlObj = new URL(req.url, `http://${req.headers.host}`);
   const pathname = urlObj.pathname;
-  // Only GET requests are supported
-  if (req.method !== 'GET') {
+  
+  // Only GET requests are supported for most endpoints
+  if (req.method !== 'GET' && !pathname.includes('/admin/') && !pathname.includes('/ai/start-session')) {
     res.writeHead(405, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ error: 'Method Not Allowed' }));
   }
+
   try {
+    // Try AI endpoints first
+    const aiHandled = await handleAIEndpoints(pathname, urlObj, req, res);
+    if (aiHandled) return;
+
+    // Existing API endpoints (unchanged)
     if (pathname === '/api/coins') {
-      // Pagination parameters
       const page = parseInt(urlObj.searchParams.get('page') || '1', 10);
       const perPage = parseInt(urlObj.searchParams.get('per_page') || '100', 10);
       const data = await getMarketData(page, perPage);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify(data));
     }
-    // Global market data endpoint: returns aggregate stats (e.g. total market cap,
-    // volume, active cryptocurrencies) using CoinGecko's global endpoint. The
-    // data is fetched via the proxy helper to accommodate network restrictions.
+
     if (pathname === '/api/global') {
       try {
         const globalData = await fetchJsonWithProxy('https://api.coingecko.com/api/v3/global');
@@ -1094,10 +1204,6 @@ async function handleApi(req, res) {
       }
     }
 
-    // Derivatives data endpoint: returns a list of derivatives contracts and
-    // related metrics (open interest, volume, funding rates). We call the
-    // CoinGecko derivatives endpoint via the proxy. Note: if the endpoint
-    // returns too much data, consider filtering on the client side.
     if (pathname === '/api/derivatives') {
       try {
         const derivatives = await fetchJsonWithProxy('https://api.coingecko.com/api/v3/derivatives');
@@ -1109,8 +1215,7 @@ async function handleApi(req, res) {
         return res.end(JSON.stringify({ error: err.message || 'Failed to fetch derivatives data' }));
       }
     }
-    // Fundamentals data endpoint: compute high-level on-chain fundamentals from
-    // global market statistics. Cached internally for 30 seconds.
+
     if (pathname === '/api/fundamentals') {
       try {
         const metrics = await getFundamentals();
@@ -1123,9 +1228,6 @@ async function handleApi(req, res) {
       }
     }
 
-    // Market intelligence data endpoint: compute ratios and volatility statistics
-    // derived from top-100 market data and global aggregates. Cached internally
-    // for 30 seconds.
     if (pathname === '/api/market-intelligence') {
       try {
         const metrics = await getMarketIntelligence();
@@ -1153,7 +1255,7 @@ async function handleApi(req, res) {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify(data));
     }
-    // AI Trading Signals endpoint
+
     if (pathname === '/api/trading-signals') {
       try {
         const signals = await getTradingSignals();
@@ -1166,7 +1268,6 @@ async function handleApi(req, res) {
       }
     }
 
-    // AI Signal Generation endpoint
     if (pathname === '/api/generate-signal') {
       try {
         const signal = await generateAISignal();
@@ -1179,7 +1280,6 @@ async function handleApi(req, res) {
       }
     }
 
-    // Portfolio Performance endpoint
     if (pathname === '/api/portfolio-performance') {
       try {
         const performance = await getPortfolioPerformance();
@@ -1192,7 +1292,32 @@ async function handleApi(req, res) {
       }
     }
 
-    // Admin endpoints
+    // Enhanced signals endpoint
+    if (pathname === '/api/enhanced-signals') {
+      try {
+        const signalType = urlObj.searchParams.get('type') || 'spot';
+        const limit = parseInt(urlObj.searchParams.get('limit') || '20', 10);
+        
+        const marketData = await getMarketData(1, 100);
+        let signals = [];
+        
+        for (const coin of marketData.slice(0, limit)) {
+          const signal = await generateEnhancedSignal(coin, signalType);
+          if (signal) {
+            signals.push(signal);
+          }
+        }
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(signals));
+      } catch (err) {
+        console.error('Enhanced signals API error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message || 'Failed to generate enhanced signals' }));
+      }
+    }
+
+    // Admin endpoints (unchanged)
     if (pathname === '/api/admin/add-signal' && req.method === 'POST') {
       try {
         let body = '';
@@ -1280,7 +1405,7 @@ async function handleApi(req, res) {
       }
     }
 
-    // Enhanced API endpoints
+    // Token and pool endpoints (unchanged)
     if (pathname === '/api/token-by-contract' && req.method === 'GET') {
       try {
         const contractAddress = urlObj.searchParams.get('address');
@@ -1318,30 +1443,6 @@ async function handleApi(req, res) {
         console.error('Liquidity pool API error:', err.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: err.message || 'Failed to fetch pool data' }));
-      }
-    }
-
-    if (pathname === '/api/enhanced-signals' && req.method === 'GET') {
-      try {
-        const signalType = urlObj.searchParams.get('type') || 'spot';
-        const limit = parseInt(urlObj.searchParams.get('limit') || '20', 10);
-        
-        const marketData = await getMarketData(1, 100);
-        let signals = [];
-        
-        for (const coin of marketData.slice(0, limit)) {
-          const signal = await generateEnhancedSignal(coin, signalType);
-          if (signal) {
-            signals.push(signal);
-          }
-        }
-        
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify(signals));
-      } catch (err) {
-        console.error('Enhanced signals API error:', err.message);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: err.message || 'Failed to generate enhanced signals' }));
       }
     }
 
@@ -1397,11 +1498,7 @@ async function handleApi(req, res) {
 }
 
 /**
- * Top-level request handler. Routes requests based on path prefix.
- * /api -> API handler; otherwise static file server.
- *
- * @param {http.IncomingMessage} req
- * @param {http.ServerResponse} res
+ * Main request listener
  */
 async function requestListener(req, res) {
   const urlPath = req.url.split('?')[0];
@@ -1412,13 +1509,15 @@ async function requestListener(req, res) {
   }
 }
 
-// Start the HTTP server after loading the BNB coin list. If loading
-// fails, the server will still start but no coins will be marked with
-// buy_signal.
+// Start the server
 const PORT = process.env.PORT || 3000;
 loadBnbCoins().finally(() => {
   const server = http.createServer(requestListener);
   server.listen(PORT, () => {
-    console.log(`Pandora backend listening on port ${PORT}`);
+    console.log(`🚀 Pandora Intel Server running on port ${PORT}`);
+    console.log(`📊 Frontend: http://localhost:${PORT}`);
+    console.log(`🔧 API: http://localhost:${PORT}/api`);
+    console.log(`🤖 AI Engine: ${tradingSystem ? 'ACTIVE' : 'FALLBACK MODE'}`);
+    console.log(`💎 Trading signals: AI-powered with 90%+ accuracy target`);
   });
 });

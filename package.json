@@ -1,20 +1,30 @@
-{
-  "name": "pandora-intel",
-  "version": "1.0.0",
-  "description": "AI Trading Platform - Pandora Intel",
-  "main": "server/index.js",
-  "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+  {
+    "name": "pandora-intel",
+    "version": "1.0.0",
+    "description": "AI-Powered Trading Platform",
+    "main": "server/index.js",
+    "scripts": {
+      "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
-  },
-  "keywords": ["crypto", "trading", "ai", "signals", "blockchain"],
-  "author": "Pandora Intel Team",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+      "engine": "node trading-engine/main.js",
+      "deploy": "git add . && git commit -m \"Deploy update\" && git push origin main"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "cors": "^2.8.5",
+      "axios": "^1.6.0",
+      "technicalindicators": "^3.1.0",
+      "node-cron": "^3.0.3",
+      "ws": "^8.14.2"
+    },
+    "devDependencies": {
+      "nodemon": "^3.0.1"
+    },
+    "keywords": ["crypto", "trading", "ai", "signals", "blockchain"],
+    "author": "Pandora Intel Team",
+    "license": "MIT"
   }
-}
