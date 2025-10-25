@@ -6,7 +6,9 @@ let currentSignals = [];
 let filteredSignals = [];
 let activeFilter = 'all';
 let isConnected = false;
-// Remove redeclaration of marketData and topPerformers if they exist elsewhere
+let marketData = null;
+let statsData = null;
+let topPerformersList = [];
 let fundamentals = null;
 let intelligence = null;
 
@@ -100,7 +102,142 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeApp();
   setupEventListeners();
   startRealTimeUpdates();
+  fetchAndRenderHeroStats();
+  fetchAndRenderLiveSignals();
+  fetchAndRenderMarketOverview();
+  fetchAndRenderTopPerformers();
 });
+
+// Live data fetching functions
+async function fetchAndRenderHeroStats() {
+  try {
+    const response = await fetch('/api/portfolio-performance');
+    if (!response.ok) throw new Error('Failed to fetch portfolio performance');
+    const data = await response.json();
+    
+    // Update hero stats
+    const heroStats = document.querySelector('.hero-stats');
+    if (heroStats) {
+      heroStats.innerHTML = `
+        <div class="stat">
+          <span class="stat-value">${data.winRate}%</span>
+          <span class="stat-label">Success Rate</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">$${formatNumber(data.totalProfit)}</span>
+          <span class="stat-label">Profits Generated</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">${data.totalTrades}</span>
+          <span class="stat-label">Active Signals</span>
+        </div>
+      `;
+      }
+    } catch (error) {
+    console.error('Error fetching hero stats:', error);
+  }
+}
+
+async function fetchAndRenderLiveSignals() {
+  try {
+    const response = await fetch('/api/trading-signals');
+    if (!response.ok) throw new Error('Failed to fetch trading signals');
+    const signals = await response.json();
+    
+    // Update signals display
+    const signalsContainer = document.querySelector('.signals-grid');
+    if (signalsContainer) {
+      signalsContainer.innerHTML = signals.map(signal => createSignalCard(signal)).join('');
+    }
+  } catch (error) {
+    console.error('Error fetching trading signals:', error);
+  }
+}
+
+async function fetchAndRenderMarketOverview() {
+  try {
+    const response = await fetch('/api/market-overview');
+    if (!response.ok) throw new Error('Failed to fetch market overview');
+    const data = await response.json();
+    
+    // Update market overview
+    console.log('Market overview data:', data);
+  } catch (error) {
+    console.error('Error fetching market overview:', error);
+  }
+}
+
+async function fetchAndRenderTopPerformers() {
+  try {
+    const response = await fetch('/api/analytics');
+    if (!response.ok) throw new Error('Failed to fetch analytics');
+    const data = await response.json();
+    
+    // Update top performers
+    console.log('Analytics data:', data);
+  } catch (error) {
+    console.error('Error fetching analytics:', error);
+  }
+}
+
+function createSignalCard(signal) {
+  return `
+    <div class="signal-card" data-type="${signal.type}">
+      <div class="signal-header">
+        <div class="signal-symbol">${signal.symbol}</div>
+        <div class="signal-type ${signal.type}">${signal.type}</div>
+      </div>
+      <div class="signal-action ${signal.action.toLowerCase()}">${signal.action}</div>
+      <div class="signal-details">
+        <div class="signal-detail">
+          <div class="signal-detail-label">Entry Price</div>
+          <div class="signal-detail-value">$${formatNumber(signal.entryPrice)}</div>
+        </div>
+        <div class="signal-detail">
+          <div class="signal-detail-label">Target</div>
+          <div class="signal-detail-value">$${formatNumber(signal.targets?.[0])}</div>
+        </div>
+        <div class="signal-detail">
+          <div class="signal-detail-label">Stop Loss</div>
+          <div class="signal-detail-value">$${formatNumber(signal.stopLoss)}</div>
+        </div>
+        <div class="signal-detail">
+          <div class="signal-detail-label">Time</div>
+          <div class="signal-detail-value">${formatTime(signal.timestamp)}</div>
+        </div>
+      </div>
+      <div class="signal-confidence">
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width: ${signal.confidence}%"></div>
+        </div>
+        <div class="confidence-value">${signal.confidence}%</div>
+      </div>
+    </div>
+  `;
+}
+
+function formatNumber(num) {
+  if (typeof num !== 'number') return '--';
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num);
+}
+
+function formatTime(timestamp) {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
 // --- LIVE DATA INITIALIZATION SECTION ---
 // Remove all previous static demo data and replace with runtime populated state:

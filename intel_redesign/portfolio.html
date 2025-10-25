@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pandora Intel Portfolio</title>
+  <link href="styles.css" rel="stylesheet" />
+  <style>
+    .portfolio-banner { background: linear-gradient(135deg, #1e3a8a 0%, #9333ea 100%); color: white; text-align: center; padding: 3rem 0 2rem;}
+    .portfolio-metrics { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin: 1.5rem 0;}
+    .metric-card { background: #fff3; border-radius: 8px; padding: 2rem; box-shadow: 0 4px 18px rgba(30,58,138,0.1); min-width: 200px;}
+    .metric-label { font-size: 1.1rem; opacity: 0.8; }
+    .metric-value { font-size: 2rem; font-weight: 700; }
+    .portfolio-table { background: white; border-radius: 16px; margin: 2rem auto; box-shadow: 0 6px 24px #0c133611; max-width:1000px; overflow-x:auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 1rem; text-align: center; }
+    th { background: #f1f5f9; border-bottom: 2px solid #e5e7eb; }
+    tbody tr:not(:last-child) { border-bottom: 1px solid #f3f3f8; }
+    .trade-win { color: #22c55e; font-weight: bold; }
+    .trade-loss { color: #ef4444; font-weight: bold; }
+    .trade-open { color: #6366f1; font-weight: bold; }
+    .section-title { margin: 2rem 0 1rem; font-size: 1.4rem; font-weight: 700; text-align: center; color: #1e293b;}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo"><span class="logo-icon">🚀</span>Pandora<span class="accent">Intel</span></div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">Dashboard</a>
+        <a href="futures.html" class="nav-item">Futures</a>
+        <a href="spot.html" class="nav-item">Spot</a>
+        <a href="hodl.html" class="nav-item">Hodl</a>
+        <a href="degen.html" class="nav-item">Degen</a>
+        <a href="portfolio.html" class="nav-item active">Portfolio</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-secondary">Connect Wallet</button>
+        <button class="btn-primary">Upgrade Pro</button>
+      </div>
+    </div>
+  </header>
+  <section class="portfolio-banner">
+    <h1>Your Portfolio</h1>
+    <div class="portfolio-metrics" id="portfolio-metrics">
+      <!-- Portfolio stats will appear here -->
+    </div>
+  </section>
+  <div class="container">
+    <h2 class="section-title">Trade History</h2>
+    <div class="portfolio-table">
+      <table id="trades-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Type</th>
+            <th>Direction</th>
+            <th>Entry</th>
+            <th>Entry Time</th>
+            <th>Exit</th>
+            <th>Exit Time</th>
+            <th>PNL</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    async function loadPortfolio() {
+      const metricsDiv = document.getElementById('portfolio-metrics');
+      const tableBody = document.querySelector('#trades-table tbody');
+      try {
+        const res = await fetch('/api/portfolio');
+        const { balance, trades } = await res.json();
+        // Metrics summary
+        const wins = trades.filter(t=>t.result==='win').length;
+        const losses = trades.filter(t=>t.result==='loss').length;
+        const open = trades.filter(t=>t.result==='open').length;
+        const closed = trades.length-open;
+        metricsDiv.innerHTML = `
+          <div class='metric-card'><div class='metric-label'>Balance</div><div class='metric-value'>$${balance}</div></div>
+          <div class='metric-card'><div class='metric-label'>Trades</div><div class='metric-value'>${trades.length}</div></div>
+          <div class='metric-card'><div class='metric-label'>Wins</div><div class='metric-value'>${wins}</div></div>
+          <div class='metric-card'><div class='metric-label'>Losses</div><div class='metric-value'>${losses}</div></div>
+          <div class='metric-card'><div class='metric-label'>Open</div><div class='metric-value'>${open}</div></div>
+        `;
+        // Table rows
+        tableBody.innerHTML = trades.map(t=>`
+          <tr>
+            <td>${t.asset}</td>
+            <td>${t.type}</td>
+            <td>${t.direction}</td>
+            <td>${t.entry != null ? t.entry : '-'}</td>
+            <td>${t.entryTime ? new Date(t.entryTime).toLocaleString() : '-'}</td>
+            <td>${t.exit != null ? t.exit : '-'}</td>
+            <td>${t.exitTime ? new Date(t.exitTime).toLocaleString() : '-'}</td>
+            <td class="${t.result==='win'?'trade-win':t.result==='loss'?'trade-loss':'trade-open'}">${t.pnl!=null?t.pnl:'--'}</td>
+            <td>${t.result.charAt(0).toUpperCase() + t.result.slice(1)}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        metricsDiv.innerHTML = '<div style="color:red">Failed to load portfolio</div>';
+        tableBody.innerHTML = '<tr><td colspan="9">Failed to load history</td></tr>';
+      }
+    }
+    loadPortfolio();
+  </script>
+</body>
+</html>

@@ -20,10 +20,12 @@
         Pandora<span class="accent">Intel</span>
       </div>
       <nav class="nav">
-        <a href="#dashboard" class="nav-item active">Dashboard</a>
-        <a href="#signals" class="nav-item">AI Signals</a>
-        <a href="#portfolio" class="nav-item">Portfolio</a>
-        <a href="#analytics" class="nav-item">Analytics</a>
+        <a href="index.html" class="nav-item active">Dashboard</a>
+        <a href="futures.html" class="nav-item">Futures</a>
+        <a href="spot.html" class="nav-item">Spot</a>
+        <a href="hodl.html" class="nav-item">Hodl</a>
+        <a href="degen.html" class="nav-item">Degen</a>
+        <a href="portfolio.html" class="nav-item">Portfolio</a>
       </nav>
       <div class="header-actions">
         <button class="btn-secondary">Connect Wallet</button>
@@ -417,5 +419,35 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+async function updateDashboardHero() {
+  const stats = document.querySelectorAll('.hero .stat-value');
+  stats.forEach(st=>st.textContent='...');
+  try {
+    const market = await fetch('/api/market-overview').then(r=>r.json());
+    if(stats[0]) stats[0].textContent = market.fearGreedIndex ? market.fearGreedIndex+"/100" : 'N/A';
+    if(stats[1]) stats[1].textContent = market.totalMarketCap ? "$"+(+market.totalMarketCap).toLocaleString() : 'N/A';
+    if(stats[2]) stats[2].textContent = market.activeCryptocurrencies || 'N/A';
+  } catch (e) { stats.forEach(st=>st.textContent='N/A'); }
+}
+async function updateAssetsMarketSection() {
+  const rows = document.querySelectorAll('.market-overview-row');
+  rows.forEach(r=>r.innerHTML='Loading...');
+  try {
+    const top = await fetch('/api/asset-metrics?symbols=bitcoin,ethereum,solana,cardano,polkadot').then(r=>r.json());
+    rows.forEach((row,i)=>{
+      const asset = top[i];
+      if(asset) row.innerHTML = `<span>${asset.symbol}:</span> $${asset.price} (<span style='color:${asset.change24h>=0?'#22c55e':'#ef4444'}'>${asset.change24h?asset.change24h.toFixed(2)+'%':''}</span>)`;
+      else row.innerHTML = 'N/A';
+    });
+  } catch (e) {
+    rows.forEach(r=>r.innerHTML='N/A');
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  updateDashboardHero();
+  updateAssetsMarketSection();
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandora Intel - Enterprise AI Trading Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enterprise-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Enterprise Header -->
+    <header class="enterprise-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>Pandora Intel</span>
+                </div>
+                <div class="version-badge">Enterprise v2.0</div>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="#dashboard" class="nav-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#signals" class="nav-item">
+                    <i class="fas fa-signal"></i>
+                    <span>AI Signals</span>
+                </a>
+                <a href="#portfolio" class="nav-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio</span>
+                </a>
+                <a href="#analytics" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#admin" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Admin</span>
+                </a>
+            </nav>
+            
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <div class="status-dot online"></div>
+                    <span>Live</span>
+                </div>
+                <button class="btn-connect">
+                    <i class="fas fa-wallet"></i>
+                    Connect Wallet
+                </button>
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32" alt="User" class="user-avatar">
+                    <span class="user-name">Trader Pro</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="enterprise-main">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Enterprise AI Trading Platform
+                        <span class="gradient-text">Powered by Advanced ML</span>
+                    </h1>
+                    <p class="hero-description">
+                        Real-time market analysis, AI-powered signals, and institutional-grade trading tools
+                        for professional traders and institutions.
+                    </p>
+                    <div class="hero-stats" id="heroStats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="winRate">--</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalProfit">--</div>
+                            <div class="stat-label">Profits Generated</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="activeSignals">--</div>
+                            <div class="stat-label">Active Signals</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="aiAccuracy">--</div>
+                            <div class="stat-label">AI Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="trading-chart">
+                        <canvas id="heroChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trading Types Grid -->
+        <section class="trading-types-section">
+            <div class="section-header">
+                <h2 class="section-title">Trading Strategies</h2>
+                <p class="section-subtitle">Choose your trading approach with AI-powered insights</p>
+            </div>
+            
+            <div class="trading-grid">
+                <div class="trading-card futures" onclick="openTradingInterface('futures')">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>QUICK Futures</h3>
+                    <p>High-frequency futures trading with AI momentum analysis</p>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <span class="metric-value">94.2%</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">2.3s</span>
+                            <span class="metric-label">Avg Response</span>
+                        </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge active">Active</span>
+                        <span class="signal-count">12 signals</span>
+                    </div>
+                </div>
+
+                <div class="trading-card spot" onclick="openTradingInterface('spot')">
+                    <div class="card-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3>Spot Trading</h3>
+                    <p>Direct cryptocurrency purchases with market timing</p>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <span class="metric-value">87.5%</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">5.1s</span>
+                            <span class="metric-label">Avg Response</span>
+                        </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge active">Active</span>
+                        <span class="signal-count">8 signals</span>
+                    </div>
+                </div>
+
+                <div class="trading-card hodl" onclick="openTradingInterface('hodl')">
+                    <div class="card-icon">
+                        <i class="fas fa-diamond"></i>
+                    </div>
+                    <h3>HODL Strategy</h3>
+                    <p>Long-term holding with fundamental analysis</p>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <span class="metric-value">91.8%</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">24h</span>
+                            <span class="metric-label">Avg Hold</span>
+                        </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge active">Active</span>
+                        <span class="signal-count">5 signals</span>
+                    </div>
+                </div>
+
+                <div class="trading-card degen" onclick="openTradingInterface('degen')">
+                    <div class="card-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h3>Degen Trading</h3>
+                    <p>High-risk, high-reward meme coin speculation</p>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <span class="metric-value">76.3%</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value">0.8s</span>
+                            <span class="metric-label">Avg Response</span>
+                        </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge active">Active</span>
+                        <span class="signal-count">15 signals</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Signals Section -->
+        <section class="live-signals-section">
+            <div class="section-header">
+                <h2 class="section-title">Live AI Signals</h2>
+                <div class="section-actions">
+                    <button class="btn-refresh" onclick="refreshSignals()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <div class="filter-dropdown">
+                        <select id="signalFilter" onchange="filterSignals()">
+                            <option value="all">All Signals</option>
+                            <option value="futures">Futures</option>
+                            <option value="spot">Spot</option>
+                            <option value="hodl">HODL</option>
+                            <option value="degen">Degen</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="signals-grid" id="signalsGrid">
+                <!-- Signals will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Market Overview -->
+        <section class="market-overview-section">
+            <div class="section-header">
+                <h2 class="section-title">Market Overview</h2>
+                <div class="market-status">
+                    <div class="status-indicator">
+                        <div class="status-dot online"></div>
+                        <span>Market Open</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="market-grid">
+                <div class="market-card">
+                    <div class="card-header">
+                        <h3>Total Market Cap</h3>
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-value" id="totalMarketCap">--</div>
+                        <div class="metric-change positive" id="marketCapChange">--</div>
+                    </div>
+                </div>
+                
+                <div class="market-card">
+                    <div class="card-header">
+                        <h3>24h Volume</h3>
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-value" id="totalVolume">--</div>
+                        <div class="metric-change positive" id="volumeChange">--</div>
+                    </div>
+                </div>
+                
+                <div class="market-card">
+                    <div class="card-header">
+                        <h3>Active Cryptocurrencies</h3>
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-value" id="activeCryptos">--</div>
+                        <div class="metric-change neutral" id="cryptoChange">--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Performance -->
+        <section class="ai-performance-section">
+            <div class="section-header">
+                <h2 class="section-title">AI Performance Metrics</h2>
+                <div class="performance-badge">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Engine Active</span>
+                </div>
+            </div>
+            
+            <div class="performance-grid">
+                <div class="performance-card">
+                    <div class="card-header">
+                        <h3>Model Accuracy</h3>
+                        <div class="accuracy-score" id="modelAccuracy">--</div>
+                    </div>
+                    <div class="accuracy-bar">
+                        <div class="accuracy-fill" id="accuracyBar"></div>
+                    </div>
+                </div>
+                
+                <div class="performance-card">
+                    <div class="card-header">
+                        <h3>Signal Generation</h3>
+                        <div class="signal-count" id="totalSignals">--</div>
+                    </div>
+                    <div class="signal-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="successfulSignals">--</span>
+                            <span class="stat-label">Successful</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value" id="failedSignals">--</span>
+                            <span class="stat-label">Failed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="performance-card">
+                    <div class="card-header">
+                        <h3>Profit & Loss</h3>
+                        <div class="pnl-value" id="totalPnL">--</div>
+                    </div>
+                    <div class="pnl-breakdown">
+                        <div class="pnl-item positive">
+                            <span class="label">Total Profit</span>
+                            <span class="value" id="totalProfit">--</span>
+                        </div>
+                        <div class="pnl-item negative">
+                            <span class="label">Total Loss</span>
+                            <span class="value" id="totalLoss">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Enterprise Footer -->
+    <footer class="enterprise-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Pandora Intel</h4>
+                <p>Enterprise AI Trading Platform</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Trading</h4>
+                <ul>
+                    <li><a href="futures.html">Futures Trading</a></li>
+                    <li><a href="spot.html">Spot Trading</a></li>
+                    <li><a href="hodl.html">HODL Strategy</a></li>
+                    <li><a href="degen.html">Degen Trading</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#documentation">Documentation</a></li>
+                    <li><a href="#api">API Reference</a></li>
+                    <li><a href="#support">Support</a></li>
+                    <li><a href="admin.html">Admin Panel</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#terms">Terms of Service</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                    <li><a href="#risk">Risk Disclosure</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 Pandora Intel. All rights reserved.</p>
+            <div class="footer-links">
+                <span>Enterprise v2.0</span>
+                <span>•</span>
+                <span>AI-Powered</span>
+                <span>•</span>
+                <span>Institutional Grade</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading AI Trading Platform...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="enterprise-script.js"></script>
+</body>
+</html>

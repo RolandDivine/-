@@ -95,14 +95,14 @@ async function fetchJsonWithProxy(url, options = {}) {
   
   let lastError;
   for (let attempt = 0; attempt < retries; attempt++) {
-  for (const proxy of proxies) {
-    let fetchUrl;
-    try {
-      if (!proxy) {
-        fetchUrl = url;
-      } else {
-        fetchUrl = proxy.endsWith('?') ? proxy + encodeURIComponent(url) : proxy + url;
-      }
+    for (const proxy of proxies) {
+      let fetchUrl;
+      try {
+        if (!proxy) {
+          fetchUrl = url;
+        } else {
+          fetchUrl = proxy.endsWith('?') ? proxy + encodeURIComponent(url) : proxy + url;
+        }
           
         const res = await fetch(fetchUrl, {
           headers: {
@@ -113,24 +113,24 @@ async function fetchJsonWithProxy(url, options = {}) {
           timeout: 10000
         });
         
-      if (!res.ok) {
-        lastError = new Error(`Proxy ${proxy || 'direct'} returned status ${res.status}`);
-        continue;
-      }
+        if (!res.ok) {
+          lastError = new Error(`Proxy ${proxy || 'direct'} returned status ${res.status}`);
+          continue;
+        }
           
-      const json = await res.json();
+        const json = await res.json();
           
         // Cache the result
         if (useCache) {
           cache.marketData.set(url, { data: json, timestamp: Date.now() });
         }
           
-      return json;
-    } catch (err) {
-      lastError = err;
-      continue;
+        return json;
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
     }
-  }
       
     // Wait before retry
     if (attempt < retries - 1) {
@@ -513,7 +513,7 @@ async function getTradingSignals() {
   try {
     // Fetch top coins for analysis
     const marketData = await getMarketData(1, 50);
-    const signals = [];
+    let signals = [];
 
     // Generate signals for top coins
     for (const coin of marketData.slice(0, 20)) {
@@ -1327,7 +1327,7 @@ async function handleApi(req, res) {
         const limit = parseInt(urlObj.searchParams.get('limit') || '20', 10);
         
         const marketData = await getMarketData(1, 100);
-        const signals = [];
+        let signals = [];
         
         for (const coin of marketData.slice(0, limit)) {
           const signal = await generateEnhancedSignal(coin, signalType);
